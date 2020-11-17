@@ -1,0 +1,5 @@
+[build]
+  publish = "publish/"
+
+  # Default build command.
+  command = "npm run build"
