@@ -1,5 +1,5 @@
 [build]
-  publish = "publish/"
+  publish = "public/"
 
   # Default build command.
   command = "npm run build"
