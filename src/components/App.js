@@ -26,7 +26,7 @@ const TextArea = styled.textarea`
  */
 function App() {
   const [client, setClient] = useState({});
-  const [patient, setPatient] = useState();
+  // const [patient, setPatient] = useState();
 
   /**
    * useEffect is where we can make API calls
