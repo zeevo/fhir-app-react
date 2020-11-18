@@ -54,7 +54,8 @@ return (
   <textarea
     rows={30}
     style={{ width: '100%' }}
-    value={JSON.stringify(patient, null, 2)}
+    value={JSON.stringify(goal, null, 2)}
+    disabled
   />
 )
 ```
@@ -66,62 +67,60 @@ Let's create a Goal to do 10,000 daily steps. An example of this Goal can be fou
 You can use `fhirclient` to send requests.
 
 ```
-// in the `App` function
-const [goal, setGoal] = useState()
-const onClick = () => {
-  const resource = {
-    resourceType: "Goal",
-    text: {
-      status: "additional",
-      div:
-        '<div xmlns="http://www.w3.org/1999/xhtml"><p> A goal to do 8000-10000 steps a day</p></div>',
-    },
-    description: {
-      text: description,
-    },
-    lifecycleStatus: "active",
-    target: [
-      {
-        measure: {
+  const onClick = async () => {
+    const resource = {
+      resourceType: "Goal",
+      text: {
+        status: "additional",
+        div:
+          '<div xmlns="http://www.w3.org/1999/xhtml"><p> A goal to do 8000-10000 steps a day</p></div>',
+      },
+      description: {
+        text: description,
+      },
+      lifecycleStatus: "active",
+      target: [
+        {
+          measure: {
+            coding: [
+              {
+                system: "http://loinc.org",
+                code: "41950-7",
+                display: "Number of steps in 24 hour Measured",
+              },
+            ],
+          },
+          detailInter: 10000,
+          dueDate: "2020-12-25",
+        },
+      ],
+      category: [
+        {
           coding: [
             {
-              system: "http://loinc.org",
-              code: "41950-7",
-              display: "Number of steps in 24 hour Measured",
+              system: "http://terminology.hl7.org/CodeSystem/goal-category",
+              code: "physiotherapy",
             },
           ],
         },
-        detailInter: 10000,
-        dueDate: "2020-12-25",
+      ],
+      subject: {
+        reference: `Patient/${patient?.id}`,
+        display: `${patient?.name[0].given[0]} ${patient?.name[0].family}`,
       },
-    ],
-    category: [
-      {
-        coding: [
-          {
-            system: "http://terminology.hl7.org/CodeSystem/goal-category",
-            code: "physiotherapy",
-          },
-        ],
-      },
-    ],
-    subject: {
-      reference: `Patient/${patient?.id}`,
-      display: `${patient?.name[0].given[0]} ${patient?.name[0].family}`,
-    },
-    startDate: new Date(),
-  };
+      startDate: new Date(),
+    };
 
-  const req = await client.request({
-  url: "Goal",
-  method: "POST",
-  body: JSON.stringify(resource),
-  headers: {
-    "Content-Type": "application/fhir+json",
-  },
-});
-setGoal(req);
-};
+    const req = await client.request({
+      url: "Goal",
+      method: "POST",
+      body: JSON.stringify(resource),
+      headers: {
+        "Content-Type": "application/fhir+json",
+      },
+    });
+    setGoal(req);
+  };
 ```
 
 Include a button for the User
@@ -134,6 +133,7 @@ Include a button for the User
     rows={30}
     style={{ width: "100%" }}
     value={JSON.stringify(patient, null, 2)}
+    disabled
   />
 ) : null}
 ```
@@ -146,43 +146,44 @@ Like with Goals, we can create Observations in order to show our progress toward
 
 ```
 // in the `App` function
-const [observation, setObservation] = useState()
-const onClick = () => {
-  const observation = {
-  "resourceType": "Observation",
-  "text": {
-    "status": "generated",
-    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Number of steps in 24 hr</p></div>"
-  },
-  "status": "final",
-  "code": {
-    "coding": [
-      {
-        "system": "http://loinc.org",
-        "code": "41950-7",
-        "display": "Number of steps in 24 hour Measured"
-      }
-    ]
-  },
-  "subject": {
-    "reference": "Patient/example",
-    "display": "Abby Smith"
-  },
-  "effectivePeriod": {
-    "start": "2013-04-02T09:30:10+01:00"
-  },
-  "issued": "2020-11-16T22:11:57.900Z",
-  "valueInteger": 10000
-}
-  const req = await client.request({
-  url: "Observation",
-  method: "POST",
-  body: JSON.stringify(observation),
-  headers: {
-    "Content-Type": "application/fhir+json",
-  },
-});
-setObservation(req);
+const [observation, setObservation] = useState();
+const onClickObservation = async () => {
+  const resource = {
+    resourceType: "Observation",
+    text: {
+      status: "generated",
+      div:
+        '<div xmlns="http://www.w3.org/1999/xhtml"><p>Number of steps in 24 hr</p></div>',
+    },
+    status: "final",
+    code: {
+      coding: [
+        {
+          system: "http://loinc.org",
+          code: "41950-7",
+          display: "Number of steps in 24 hour Measured",
+        },
+      ],
+    },
+    subject: {
+      reference: `Patient/${patient.id}`,
+      display: "Abby Smith",
+    },
+    effectivePeriod: {
+      start: "2013-04-02T09:30:10+01:00",
+    },
+    issued: "2020-11-16T22:11:57.900Z",
+    valueInteger: 10000,
+  };
+  const res = await client.request({
+    url: "Observation",
+    method: "POST",
+    body: JSON.stringify(resource),
+    headers: {
+      "Content-Type": "application/fhir+json",
+    },
+  });
+  setObservation(res);
 };
 ```
 
@@ -190,12 +191,45 @@ Include a button for the User
 
 ```
 // In the return value of `App.js`
-<button onClick={onClick}>Create a Goal</button>
-{goal ? (
+<button onClick={onClickObservation}>Create an Observation</button>
+{observation ? (
   <textarea
     rows={30}
     style={{ width: "100%" }}
-    value={JSON.stringify(patient, null, 2)}
+    value={JSON.stringify(observation, null, 2)}
+    disabled
   />
 ) : null}
+```
+
+## 7. Read Observations
+
+We can read a patient's Observations back to track our progress.
+
+```
+const [observations, setObservations] = useState()
+
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const client = await connect();
+
+      setClient(client);
+
+      /* Fetch the Patient and other resources here using FhirClient */
+
+      const patient = await client.request(`Patient/${client.patient.id}`);
+
+      /* use setState to store it in the component state */
+
+      setPatient(patient);
+
+      const obs = await client.request(`Observation/?patient=${patient.id}&code=http://loinc.org|41950-7`);
+      setObservations(obs);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+  fetchData();
+}, []);
 ```
