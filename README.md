@@ -2,7 +2,7 @@
 
 The goal of this project is to teach you how to use React in conjunction with the SMART Auth flow, and how to render FHIR Resources
 
-Consider using a Markdown Viewer to read this file such as https://dillinger.io/
+If you are reading this on Codesandbox, consider using a Markdown Viewer to read this file such as https://dillinger.io/
 
 ## Getting Started
 
